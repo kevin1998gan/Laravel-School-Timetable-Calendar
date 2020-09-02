@@ -1,0 +1,38 @@
+language: php
+
+php:
+  - 7.3
+
+addons:
+  chrome: stable
+
+services:
+  - mysql
+
+before_install:
+  - mysql -e "CREATE DATABASE laravel character set utf8mb4 collate utf8mb4_bin;"
+  - mysql_upgrade -u root
+
+install:
+  - cp .env.example .env
+  - travis_retry composer install --no-interaction --prefer-dist --no-suggest
+  - php artisan key:generate
+  - php artisan migrate --seed
+  - php artisan dusk:chrome-driver
+  
+
+before_script:
+  - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
+  - php artisan serve &
+
+script:
+  - php artisan dusk
+
+notifications:
+  email:
+    recipients:
+      - yeechoong97@1utar.my
+      - theanchun97@1utar.my
+
+    on_success: never
+    on_fail: always
